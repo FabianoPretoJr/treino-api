@@ -10,6 +10,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
+using projeto.Data;
 
 namespace projeto
 {
@@ -25,7 +27,11 @@ namespace projeto
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDbContext<ApplicationDbContext>(options => options.UseMySql(Configuration.GetConnectionString("DefaultConnection")));
             services.AddControllers();
+            services.AddSwaggerGen(config => {
+                config.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo {Title = "API DE DELEGACIA", Version = "v1"});
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -41,6 +47,14 @@ namespace projeto
             app.UseRouting();
 
             app.UseAuthorization();
+
+            app.UseSwagger(config => {
+                config.RouteTemplate = "fabiano/{documentName}/swagger.json";
+            });
+
+            app.UseSwaggerUI(config => {
+                config.SwaggerEndpoint("/fabiano/v1/swagger.json", "v1 docs");
+            });
 
             app.UseEndpoints(endpoints =>
             {
