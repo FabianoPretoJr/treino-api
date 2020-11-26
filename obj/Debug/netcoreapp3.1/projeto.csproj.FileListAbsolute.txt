@@ -47,3 +47,6 @@ C:\Users\FOEU\My Private Documents\Projetos\treino-api\projeto\obj\Debug\netcore
 C:\Users\FOEU\My Private Documents\Projetos\treino-api\projeto\obj\Debug\netcoreapp3.1\projeto.dll
 C:\Users\FOEU\My Private Documents\Projetos\treino-api\projeto\obj\Debug\netcoreapp3.1\projeto.pdb
 C:\Users\FOEU\My Private Documents\Projetos\treino-api\projeto\obj\Debug\netcoreapp3.1\projeto.genruntimeconfig.cache
+C:\Users\FOEU\My Private Documents\Projetos\treino-api\projeto\bin\Debug\netcoreapp3.1\Microsoft.AspNetCore.JsonPatch.dll
+C:\Users\FOEU\My Private Documents\Projetos\treino-api\projeto\bin\Debug\netcoreapp3.1\Microsoft.AspNetCore.Mvc.NewtonsoftJson.dll
+C:\Users\FOEU\My Private Documents\Projetos\treino-api\projeto\bin\Debug\netcoreapp3.1\Newtonsoft.Json.Bson.dll

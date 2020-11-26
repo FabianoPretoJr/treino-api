@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using projeto.Data;
 using projeto.Models;
 using System.Linq;
-using System.Collections.Generic;
 using System;
+using Microsoft.EntityFrameworkCore;
 
 namespace projeto.Controllers
 {
@@ -20,7 +20,21 @@ namespace projeto.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            var crimes = database.crimes.ToList();
+            var crimes = database.crimes.Include(c => c.Criminoso).Include(c => c.Vitima).ToList();
+            return Ok(crimes);
+        }
+
+        [HttpGet("GetByCriminoso/{id}")]
+        public IActionResult GetByCriminoso(int id)
+        {
+            var crimes = database.crimes.Where(c => c.CriminosoID == id).Include(c => c.Vitima).ToList();
+            return Ok(crimes);
+        }
+
+        [HttpGet("GetByVitima/{id}")]
+        public IActionResult GetByVitima(int id)
+        {
+            var crimes = database.crimes.Where(c => c.VitimaID == id).Include(c => c.Criminoso).ToList();
             return Ok(crimes);
         }
 

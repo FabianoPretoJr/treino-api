@@ -3,6 +3,7 @@ using projeto.Models;
 using projeto.Data;
 using System.Linq;
 using System;
+using Microsoft.EntityFrameworkCore;
 
 namespace projeto.Controllers
 {
@@ -20,7 +21,7 @@ namespace projeto.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            var vitimas = database.vitimas.Where(v => v.Status == true).ToList();
+            var vitimas = database.vitimas.Where(v => v.Status == true).Include(v => v.Crimes).ThenInclude(v => v.Criminoso).ToList();
             return Ok(vitimas);
         }
 

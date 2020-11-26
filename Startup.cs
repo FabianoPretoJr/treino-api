@@ -28,7 +28,9 @@ namespace projeto
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<ApplicationDbContext>(options => options.UseMySql(Configuration.GetConnectionString("DefaultConnection")));
-            services.AddControllers();
+
+            services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
             services.AddSwaggerGen(config => {
                 config.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo {Title = "API DE DELEGACIA", Version = "v1"});
             });
