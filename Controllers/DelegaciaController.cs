@@ -60,42 +60,50 @@ namespace projeto.Controllers
             catch(Exception)
             {
                 Response.StatusCode = 400;
-                return new ObjectResult("");
+                return new ObjectResult(new {msg = "Id não encontrado"});
             }
         }
 
         [HttpPost]
         public IActionResult Post([FromBody]DelegaciaDTO delegaciaTemp)
         {
-            if (delegaciaTemp.Endereco.Length <= 1)
+            try
+            {
+                if (delegaciaTemp.Endereco.Length <= 1)
+                {
+                    Response.StatusCode = 400;
+                    return new ObjectResult(new {msg = "O endereço da delegacia deve ter mais de um caracter"});
+                }
+
+                if(delegaciaTemp.Telefone.Length < 8)
+                {
+                    Response.StatusCode = 400;
+                    return new ObjectResult(new {msg = "O telefone da delegacia deve ter no mínimo 8 (oito) caracteres"});
+                }
+
+                if(delegaciaTemp.Batalhao.Length <= 1)
+                {
+                    Response.StatusCode = 400;
+                    return new ObjectResult(new {msg = "O número de batalhão da delegacia deve ter mais de um caracter"});
+                }
+
+                Delegacia delegacia = new Delegacia();
+
+                delegacia.Endereco = delegaciaTemp.Endereco;
+                delegacia.Telefone = delegaciaTemp.Telefone;
+                delegacia.Batalhao = delegaciaTemp.Batalhao;
+                delegacia.Status = true;
+                database.delegacias.Add(delegacia);
+                database.SaveChanges();
+
+                Response.StatusCode = 201;
+                return new ObjectResult("");
+            }
+            catch(Exception)
             {
                 Response.StatusCode = 400;
-                return new ObjectResult(new {msg = "O endereço da delegacia deve ter mais de um caracter"});
+                return new ObjectResult(new {msg = "Todos campos devem ser passados"});
             }
-
-            if(delegaciaTemp.Telefone.Length < 8)
-            {
-                Response.StatusCode = 400;
-                return new ObjectResult(new {msg = "O telefone da delegacia deve ter no mínimo 8 (oito) caracteres"});
-            }
-
-            if(delegaciaTemp.Batalhao.Length <= 1)
-            {
-                Response.StatusCode = 400;
-                return new ObjectResult(new {msg = "O número de batalhão da delegacia deve ter mais de um caracter"});
-            }
-
-            Delegacia delegacia = new Delegacia();
-
-            delegacia.Endereco = delegaciaTemp.Endereco;
-            delegacia.Telefone = delegaciaTemp.Telefone;
-            delegacia.Batalhao = delegaciaTemp.Batalhao;
-            delegacia.Status = true;
-            database.delegacias.Add(delegacia);
-            database.SaveChanges();
-
-            Response.StatusCode = 201;
-            return new ObjectResult("");
         }
 
         [HttpPatch]
@@ -150,7 +158,7 @@ namespace projeto.Controllers
             catch(Exception)
             {
                 Response.StatusCode = 404;
-                return new ObjectResult("");
+                return new ObjectResult(new {msg = "Id da delegacia é inválido"});
             }
         }
     }

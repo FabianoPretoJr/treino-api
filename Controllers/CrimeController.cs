@@ -29,7 +29,7 @@ namespace projeto.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            var crimes = database.crimes.Include(c => c.Criminoso).Include(c => c.Vitima).ToList();
+            var crimes = database.crimes.Include(c => c.Criminoso).Include(c => c.Vitima).Include(c => c.Policial).Include(c => c.Delegacia).Include(c => c.Delegado).ToList();
             
             List<CrimeContainer> crimesHATEOAS = new List<CrimeContainer>();
             foreach(var crime in crimes)
@@ -49,116 +49,149 @@ namespace projeto.Controllers
         [HttpGet("GetByCriminoso/{id}")]
         public IActionResult GetByCriminoso(int id)
         {
-            var crimes = database.crimes.Where(c => c.CriminosoID == id).Include(c => c.Vitima).Include(c => c.Policial).ToList();
+            var crimes = database.crimes.Where(c => c.CriminosoID == id).Include(c => c.Vitima).Include(c => c.Policial).Include(c => c.Delegacia).Include(c => c.Delegado).ToList();
             
-            List<CrimeContainer> crimesHATEOAS = new List<CrimeContainer>();
-            foreach(var crime in crimes)
+            if(crimes.Count != 0)
             {
-                CrimeContainer crimeHATEOAS = new CrimeContainer();
+                List<CrimeContainer> crimesHATEOAS = new List<CrimeContainer>();
+                foreach(var crime in crimes)
+                {
+                    CrimeContainer crimeHATEOAS = new CrimeContainer();
 
-                crimeHATEOAS.crime = crime;
-                crimeHATEOAS.linksCriminoso = HATEOAS.GetActions("GetByCriminoso/" + crime.CriminosoID.ToString());
-                crimeHATEOAS.linksVitima = HATEOAS.GetActions("GetByVitima/" + crime.VitimaID.ToString());
-                crimeHATEOAS.linksPolicial = HATEOAS.GetActions("GetByPolicial/" + crime.PolicialID.ToString());
-                crimesHATEOAS.Add(crimeHATEOAS);
+                    crimeHATEOAS.crime = crime;
+                    crimeHATEOAS.linksCriminoso = HATEOAS.GetActions("GetByCriminoso/" + crime.CriminosoID.ToString());
+                    crimeHATEOAS.linksVitima = HATEOAS.GetActions("GetByVitima/" + crime.VitimaID.ToString());
+                    crimeHATEOAS.linksPolicial = HATEOAS.GetActions("GetByPolicial/" + crime.PolicialID.ToString());
+                    crimesHATEOAS.Add(crimeHATEOAS);
+                }
+
+                return Ok(crimesHATEOAS);
             }
-
-            return Ok(crimesHATEOAS);
+            else
+            {
+                Response.StatusCode = 400;
+                return new ObjectResult(new {msg = "Id não encontrado"});
+            }
         }
 
         [HttpGet("GetByVitima/{id}")]
         public IActionResult GetByVitima(int id)
         {
-            var crimes = database.crimes.Where(c => c.VitimaID == id).Include(c => c.Criminoso).Include(c => c.Policial).ToList();
+            var crimes = database.crimes.Where(c => c.VitimaID == id).Include(c => c.Criminoso).Include(c => c.Policial).Include(c => c.Delegacia).Include(c => c.Delegado).ToList();
             
-            List<CrimeContainer> crimesHATEOAS = new List<CrimeContainer>();
-            foreach(var crime in crimes)
+            if(crimes.Count != 0)
             {
-                CrimeContainer crimeHATEOAS = new CrimeContainer();
+                List<CrimeContainer> crimesHATEOAS = new List<CrimeContainer>();
+                foreach(var crime in crimes)
+                {
+                    CrimeContainer crimeHATEOAS = new CrimeContainer();
 
-                crimeHATEOAS.crime = crime;
-                crimeHATEOAS.linksCriminoso = HATEOAS.GetActions("GetByCriminoso/" + crime.CriminosoID.ToString());
-                crimeHATEOAS.linksVitima = HATEOAS.GetActions("GetByVitima/" + crime.VitimaID.ToString());
-                crimeHATEOAS.linksPolicial = HATEOAS.GetActions("GetByPolicial/" + crime.PolicialID.ToString());
-                crimesHATEOAS.Add(crimeHATEOAS);
+                    crimeHATEOAS.crime = crime;
+                    crimeHATEOAS.linksCriminoso = HATEOAS.GetActions("GetByCriminoso/" + crime.CriminosoID.ToString());
+                    crimeHATEOAS.linksVitima = HATEOAS.GetActions("GetByVitima/" + crime.VitimaID.ToString());
+                    crimeHATEOAS.linksPolicial = HATEOAS.GetActions("GetByPolicial/" + crime.PolicialID.ToString());
+                    crimesHATEOAS.Add(crimeHATEOAS);
+                }
+
+                return Ok(crimesHATEOAS);
             }
-
-            return Ok(crimesHATEOAS);
+            else
+            {
+                Response.StatusCode = 400;
+                return new ObjectResult(new {msg = "Id não encontrado"});
+            }
         }
 
         [HttpGet("GetByPolicial/{id}")]
         public IActionResult GetByPolicial(int id)
         {
-            var crimes = database.crimes.Where(c => c.PolicialID == id).Include(c => c.Criminoso).Include(c => c.Vitima).ToList();
+            var crimes = database.crimes.Where(c => c.PolicialID == id).Include(c => c.Criminoso).Include(c => c.Vitima).Include(c => c.Delegacia).Include(c => c.Delegado).ToList();
             
-            List<CrimeContainer> crimesHATEOAS = new List<CrimeContainer>();
-            foreach(var crime in crimes)
+            if(crimes.Count != 0)
             {
-                CrimeContainer crimeHATEOAS = new CrimeContainer();
+                List<CrimeContainer> crimesHATEOAS = new List<CrimeContainer>();
+                foreach(var crime in crimes)
+                {
+                    CrimeContainer crimeHATEOAS = new CrimeContainer();
 
-                crimeHATEOAS.crime = crime;
-                crimeHATEOAS.linksCriminoso = HATEOAS.GetActions("GetByCriminoso/" + crime.CriminosoID.ToString());
-                crimeHATEOAS.linksVitima = HATEOAS.GetActions("GetByVitima/" + crime.VitimaID.ToString());
-                crimeHATEOAS.linksPolicial = HATEOAS.GetActions("GetByPolicial/" + crime.PolicialID.ToString());
-                crimesHATEOAS.Add(crimeHATEOAS);
+                    crimeHATEOAS.crime = crime;
+                    crimeHATEOAS.linksCriminoso = HATEOAS.GetActions("GetByCriminoso/" + crime.CriminosoID.ToString());
+                    crimeHATEOAS.linksVitima = HATEOAS.GetActions("GetByVitima/" + crime.VitimaID.ToString());
+                    crimeHATEOAS.linksPolicial = HATEOAS.GetActions("GetByPolicial/" + crime.PolicialID.ToString());
+                    crimesHATEOAS.Add(crimeHATEOAS);
+                }
+
+                return Ok(crimesHATEOAS);
             }
-
-            return Ok(crimesHATEOAS);
+            else
+            {
+                Response.StatusCode = 400;
+                return new ObjectResult(new {msg = "Id não encontrado"});
+            }
         }
 
         [HttpPost]
         public IActionResult Post([FromBody]CrimeDTO[] crimesTemp)
         {
-            foreach (var crimeTemp in crimesTemp)
+            try
             {
-                if (crimeTemp.CriminosoID <= 0)
+                foreach (var crimeTemp in crimesTemp)
                 {
-                    Response.StatusCode = 400;
-                    return new ObjectResult(new {msg = "Id de criminoso é inválido"});
+                    if (crimeTemp.CriminosoID <= 0)
+                    {
+                        Response.StatusCode = 400;
+                        return new ObjectResult(new {msg = "Id de criminoso é inválido"});
+                    }
+
+                    if(crimeTemp.VitimaID <= 0)
+                    {
+                        Response.StatusCode = 400;
+                        return new ObjectResult(new {msg = "Id de vitima é inválido"});
+                    }
+
+                    if(crimeTemp.PolicialID <= 0)
+                    {
+                        Response.StatusCode = 400;
+                        return new ObjectResult(new {msg = "Id de policial é inválido"});
+                    }
+
+                    if(crimeTemp.Data.ToString().Length < 10)
+                    {
+                        Response.StatusCode = 400;
+                        return new ObjectResult(new {msg = "Campo data está invalido"});
+                    }
+
+                    if(crimeTemp.Descricao.Length <= 1)
+                    {
+                        Response.StatusCode = 400;
+                        return new ObjectResult(new {msg = "Campo descrição deve ter pelo menos mais de 1 caracter"});
+                    }
+
+                    Crime crime = new Crime();
+
+                    crime.Data = DateTime.ParseExact(crimeTemp.Data, "dd/MM/yyyy", null);
+                    crime.Descricao = crimeTemp.Descricao;
+
+                    crime.Criminoso = database.criminosos.First(c => c.Id == crimeTemp.CriminosoID);
+                    crime.Vitima = database.vitimas.First(v => v.Id == crimeTemp.VitimaID);
+                    crime.Policial = database.policiais.First(p => p.Id == crimeTemp.PolicialID);
+
+                    crime.Delegacia = database.delegacias.First(d => d.Id == crimeTemp.DelegaciaID);
+                    crime.Delegado = database.delegados.First(d => d.Id == crimeTemp.DelegadoID);
+
+                    database.crimes.Add(crime);
+                    database.SaveChanges();
                 }
 
-                if(crimeTemp.VitimaID <= 0)
-                {
-                    Response.StatusCode = 400;
-                    return new ObjectResult(new {msg = "Id de vitima é inválido"});
-                }
-
-                if(crimeTemp.PolicialID <= 0)
-                {
-                    Response.StatusCode = 400;
-                    return new ObjectResult(new {msg = "Id de policial é inválido"});
-                }
-
-                if(crimeTemp.Data.ToString().Length < 10)
-                {
-                    Response.StatusCode = 400;
-                    return new ObjectResult(new {msg = "Campo data está invalido"});
-                }
-
-                if(crimeTemp.Descricao.Length <= 1)
-                {
-                    Response.StatusCode = 400;
-                    return new ObjectResult(new {msg = "Campo descrição deve ter pelo menos mais de 1 caracter"});
-                }
-
-                Crime crime = new Crime();
-
-                crime.Data = DateTime.ParseExact(crimeTemp.Data, "dd/MM/yyyy", null);
-                crime.Descricao = crimeTemp.Descricao;
-
-                crime.Criminoso = database.criminosos.First(c => c.Id == crimeTemp.CriminosoID);
-                crime.Vitima = database.vitimas.First(v => v.Id == crimeTemp.VitimaID);
-                crime.Policial = database.policiais.First(p => p.Id == crimeTemp.PolicialID);
-
-                crime.Delegacia = database.delegacias.First(d => d.Id == crimeTemp.DelegaciaID);
-                crime.Delegado = database.delegados.First(d => d.Id == crimeTemp.DelegadoID);
-
-                database.crimes.Add(crime);
-                database.SaveChanges();
+                Response.StatusCode = 201;
+                return new ObjectResult("");
+            }
+            catch(Exception)
+            {
+                Response.StatusCode = 400;
+                return new ObjectResult(new {msg = "Todos campos devem ser passados"});
             }
 
-            Response.StatusCode = 201;
-            return new ObjectResult("");
         }
 
         [HttpPatch]
@@ -224,7 +257,7 @@ namespace projeto.Controllers
             catch(Exception)
             {
                 Response.StatusCode = 404;
-                return new ObjectResult("");
+                return new ObjectResult(new {msg = "Id's estão inválidos"});
             }
         }
     }

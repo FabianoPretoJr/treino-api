@@ -59,35 +59,43 @@ namespace projeto.Controllers
             catch (Exception)
             {
                 Response.StatusCode = 400;
-                return new ObjectResult("");
+                return new ObjectResult(new {msg = "Id não encontrado"});
             }
         }
 
         [HttpPost]
         public IActionResult Post([FromBody]CriminosoDTO criminosoTemp)
         {
-            if (criminosoTemp.Nome.Length <= 1)
+            try
+            {
+                if (criminosoTemp.Nome.Length <= 1)
+                {
+                    Response.StatusCode = 400;
+                    return new ObjectResult(new {msg = "O nome do criminoso deve ter mais de um caracter"});
+                }
+
+                if(criminosoTemp.CPF.Length != 11)
+                {
+                    Response.StatusCode = 400;
+                    return new ObjectResult(new {msg = "O CPF deve ter 11 digitos"});
+                }
+
+                Criminoso criminoso = new Criminoso();
+
+                criminoso.Nome = criminosoTemp.Nome;
+                criminoso.CPF = criminosoTemp.CPF;
+                criminoso.Status = true;
+                database.criminosos.Add(criminoso);
+                database.SaveChanges();
+
+                Response.StatusCode = 201;
+                return new ObjectResult("");
+            }
+            catch(Exception)
             {
                 Response.StatusCode = 400;
-                return new ObjectResult(new {msg = "O nome do criminoso deve ter mais de um caracter"});
+                return new ObjectResult(new {msg = "Todos campos devem ser passados"});
             }
-
-            if(criminosoTemp.CPF.Length != 11)
-            {
-                Response.StatusCode = 400;
-                return new ObjectResult(new {msg = "O CPF deve ter 11 digitos"});
-            }
-
-            Criminoso criminoso = new Criminoso();
-
-            criminoso.Nome = criminosoTemp.Nome;
-            criminoso.CPF = criminosoTemp.CPF;
-            criminoso.Status = true;
-            database.criminosos.Add(criminoso);
-            database.SaveChanges();
-
-            Response.StatusCode = 201;
-            return new ObjectResult("");
         }
 
         [HttpPatch]
@@ -110,13 +118,13 @@ namespace projeto.Controllers
                     else
                     {
                         Response.StatusCode = 400;
-                        return new ObjectResult("Criminoso não encontrado");
+                        return new ObjectResult(new {msg = "Criminoso não encontrado"});
                     }
                 }
                 catch(Exception)
                 {
                     Response.StatusCode = 400;
-                    return new ObjectResult("Criminoso não encontrado");
+                    return new ObjectResult(new {msg = "Criminoso não encontrado"});
                 }
             }
             else
@@ -140,7 +148,7 @@ namespace projeto.Controllers
             catch(Exception)
             {
                 Response.StatusCode = 404;
-                return new ObjectResult("");
+                return new ObjectResult(new {msg = "Id do criminoso é inválido"});
             }
         }
     }

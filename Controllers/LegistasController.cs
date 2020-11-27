@@ -58,36 +58,44 @@ namespace projeto.Controllers
             catch (Exception)
             {
                 Response.StatusCode = 400;
-                return new ObjectResult("");
+                return new ObjectResult(new {msg = "Id não encontrado"});
             }
         }
 
         [HttpPost]
         public IActionResult Post([FromBody]LegistaDTO legistaTemp)
         {
-            if (legistaTemp.Nome.Length <= 1)
+            try
+            {
+                if (legistaTemp.Nome.Length <= 1)
+                {
+                    Response.StatusCode = 400;
+                    return new ObjectResult(new {msg = "O nome do legista deve ter mais de um caracter"});
+                }
+
+                if(legistaTemp.CRM.Length < 6 || legistaTemp.CRM.Length > 12)
+                {
+                    Response.StatusCode = 400;
+                    return new ObjectResult(new {msg = "O CRM deve ter de 6 a 12 digitos"});
+                }
+
+                Legista legista = new Legista();
+
+                legista.Nome = legistaTemp.Nome;
+                legista.CRM = legistaTemp.CRM;
+                legista.Status = true;
+
+                database.legistas.Add(legista);
+                database.SaveChanges();
+
+                Response.StatusCode = 201;
+                return new ObjectResult("");
+            }
+            catch(Exception)
             {
                 Response.StatusCode = 400;
-                return new ObjectResult(new {msg = "O nome do legista deve ter mais de um caracter"});
+                return new ObjectResult(new {msg = "Todos campos devem ser passados"});
             }
-
-            if(legistaTemp.CRM.Length < 6 || legistaTemp.CRM.Length > 12)
-            {
-                Response.StatusCode = 400;
-                return new ObjectResult(new {msg = "O CRM deve ter de 6 a 12 digitos"});
-            }
-
-            Legista legista = new Legista();
-
-            legista.Nome = legistaTemp.Nome;
-            legista.CRM = legistaTemp.CRM;
-            legista.Status = true;
-
-            database.legistas.Add(legista);
-            database.SaveChanges();
-
-            Response.StatusCode = 201;
-            return new ObjectResult("");
         }
 
         [HttpPatch]
@@ -140,7 +148,7 @@ namespace projeto.Controllers
             catch(Exception)
             {
                 Response.StatusCode = 404;
-                return new ObjectResult("");
+                return new ObjectResult(new {msg = "Id do legista é inválido"});
             }
         }
     }

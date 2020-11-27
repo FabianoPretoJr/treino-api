@@ -49,82 +49,106 @@ namespace projeto.Controllers
         public IActionResult GetByVitima(int id)
         {
             var autopsias = database.autopsias.Where(a => a.VitimaID == id).Include(a => a.Legista).ToList();
-            
-            List<AutopsiaContainer> autopsiasHATEOAS = new List<AutopsiaContainer>();
-            foreach(var autopsia in autopsias)
+
+            if(autopsias.Count != 0)
             {
-                AutopsiaContainer autopsiaHATEOAS = new AutopsiaContainer();
+                List<AutopsiaContainer> autopsiasHATEOAS = new List<AutopsiaContainer>();
+                foreach(var autopsia in autopsias)
+                {
+                    AutopsiaContainer autopsiaHATEOAS = new AutopsiaContainer();
 
-                autopsiaHATEOAS.autopsia = autopsia;
-                autopsiaHATEOAS.linksVitima = HATEOAS.GetActions("GetByVitima/" + autopsia.VitimaID.ToString());
-                autopsiaHATEOAS.linksLegista = HATEOAS.GetActions("GetByLegista/" + autopsia.LegistaID.ToString());
-                autopsiasHATEOAS.Add(autopsiaHATEOAS);
+                    autopsiaHATEOAS.autopsia = autopsia;
+                    autopsiaHATEOAS.linksVitima = HATEOAS.GetActions("GetByVitima/" + autopsia.VitimaID.ToString());
+                    autopsiaHATEOAS.linksLegista = HATEOAS.GetActions("GetByLegista/" + autopsia.LegistaID.ToString());
+                    autopsiasHATEOAS.Add(autopsiaHATEOAS);
+                }
+
+                return Ok(autopsiasHATEOAS);
             }
-
-            return Ok(autopsiasHATEOAS);
+            else
+            {
+                Response.StatusCode = 400;
+                return new ObjectResult(new {msg = "Id não encontrado"});
+            }
         }
 
         [HttpGet("GetByLegista/{id}")]
         public IActionResult GetByLegista(int id)
         {
             var autopsias = database.autopsias.Where(a => a.LegistaID == id).Include(a => a.Vitima).ToList();
-            
-            List<AutopsiaContainer> autopsiasHATEOAS = new List<AutopsiaContainer>();
-            foreach(var autopsia in autopsias)
+
+            if(autopsias.Count != 0)
             {
-                AutopsiaContainer autopsiaHATEOAS = new AutopsiaContainer();
+                List<AutopsiaContainer> autopsiasHATEOAS = new List<AutopsiaContainer>();
+                foreach(var autopsia in autopsias)
+                {
+                    AutopsiaContainer autopsiaHATEOAS = new AutopsiaContainer();
 
-                autopsiaHATEOAS.autopsia = autopsia;
-                autopsiaHATEOAS.linksVitima = HATEOAS.GetActions("GetByVitima/" + autopsia.VitimaID.ToString());
-                autopsiaHATEOAS.linksLegista = HATEOAS.GetActions("GetByLegista/" + autopsia.LegistaID.ToString());
-                autopsiasHATEOAS.Add(autopsiaHATEOAS);
+                    autopsiaHATEOAS.autopsia = autopsia;
+                    autopsiaHATEOAS.linksVitima = HATEOAS.GetActions("GetByVitima/" + autopsia.VitimaID.ToString());
+                    autopsiaHATEOAS.linksLegista = HATEOAS.GetActions("GetByLegista/" + autopsia.LegistaID.ToString());
+                    autopsiasHATEOAS.Add(autopsiaHATEOAS);
+                }
+
+                return Ok(autopsiasHATEOAS);
             }
-
-            return Ok(autopsiasHATEOAS);
+            else
+            {
+                Response.StatusCode = 400;
+                return new ObjectResult(new {msg = "Id não encontrado"});
+            }
         }
 
         [HttpPost]
         public IActionResult Post([FromBody]AutopsiaDTO[] autopsiasTemp)
         {
-            foreach (var autopsiaTemp in autopsiasTemp)
+            try
             {
-                if (autopsiaTemp.LegistaID <= 0)
+                foreach (var autopsiaTemp in autopsiasTemp)
                 {
-                    Response.StatusCode = 400;
-                    return new ObjectResult(new {msg = "Id do legista inválido"});
+                    if (autopsiaTemp.LegistaID <= 0)
+                    {
+                        Response.StatusCode = 400;
+                        return new ObjectResult(new {msg = "Id do legista inválido"});
+                    }
+
+                    if(autopsiaTemp.VitimaID <= 0)
+                    {
+                        Response.StatusCode = 400;
+                        return new ObjectResult(new {msg = "Id de vitima inválido"});
+                    }
+
+                    if(autopsiaTemp.Data.ToString().Length < 10)
+                    {
+                        Response.StatusCode = 400;
+                        return new ObjectResult(new {msg = "Campo data está invalido"});
+                    }
+
+                    if(autopsiaTemp.Laudo.Length <= 1)
+                    {
+                        Response.StatusCode = 400;
+                        return new ObjectResult(new {msg = "Campo laudo deve ter pelo menos mais de 1 caracter"});
+                    }
+
+                    Autopsia autopsia = new Autopsia();
+
+                    autopsia.Data = DateTime.ParseExact(autopsiaTemp.Data, "dd/MM/yyyy", null);
+                    autopsia.Laudo = autopsiaTemp.Laudo;
+                    autopsia.Legista = database.legistas.First(c => c.Id == autopsiaTemp.LegistaID);
+                    autopsia.Vitima = database.vitimas.First(v => v.Id == autopsiaTemp.VitimaID);
+
+                    database.autopsias.Add(autopsia);
+                    database.SaveChanges();
                 }
 
-                if(autopsiaTemp.VitimaID <= 0)
-                {
-                    Response.StatusCode = 400;
-                    return new ObjectResult(new {msg = "Id de vitima inválido"});
-                }
-
-                if(autopsiaTemp.Data.ToString().Length < 10)
-                {
-                    Response.StatusCode = 400;
-                    return new ObjectResult(new {msg = "Campo data está invalido"});
-                }
-
-                if(autopsiaTemp.Laudo.Length <= 1)
-                {
-                    Response.StatusCode = 400;
-                    return new ObjectResult(new {msg = "Campo laudo deve ter pelo menos mais de 1 caracter"});
-                }
-
-                Autopsia autopsia = new Autopsia();
-
-                autopsia.Data = DateTime.ParseExact(autopsiaTemp.Data, "dd/MM/yyyy", null);
-                autopsia.Laudo = autopsiaTemp.Laudo;
-                autopsia.Legista = database.legistas.First(c => c.Id == autopsiaTemp.LegistaID);
-                autopsia.Vitima = database.vitimas.First(v => v.Id == autopsiaTemp.VitimaID);
-
-                database.autopsias.Add(autopsia);
-                database.SaveChanges();
+                Response.StatusCode = 201;
+                return new ObjectResult("");
             }
-
-            Response.StatusCode = 201;
-            return new ObjectResult("");
+            catch(Exception)
+            {
+                Response.StatusCode = 400;
+                return new ObjectResult(new {msg = "Todos campos devem ser passados"});
+            }
         }
 
         [HttpPatch]
@@ -183,7 +207,7 @@ namespace projeto.Controllers
             catch(Exception)
             {
                 Response.StatusCode = 404;
-                return new ObjectResult("");
+                return new ObjectResult(new {msg = "Id's estão inválidos"});
             }
         }
     }

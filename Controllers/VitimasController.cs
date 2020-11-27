@@ -58,41 +58,49 @@ namespace projeto.Controllers
             catch (Exception)
             {
                 Response.StatusCode = 400;
-                return new ObjectResult("");
+                return new ObjectResult(new {msg = "Id não encontrado"});
             }
         }
 
         [HttpPost]
         public IActionResult Post([FromBody]VitimaDTO vitimaTemp)
         {
-            if (vitimaTemp.Nome.Length <= 1)
+            try
+            {
+                if (vitimaTemp.Nome.Length <= 1)
+                {
+                    Response.StatusCode = 400;
+                    return new ObjectResult(new {msg = "O nome do criminoso deve ter mais de um caracter"});
+                }
+                if(vitimaTemp.CPF.Length != 11)
+                {
+                    Response.StatusCode = 400;
+                    return new ObjectResult(new {msg = "O CPF deve ter 11 digitos"});
+                }
+                if(vitimaTemp.Idade <= 0)
+                {
+                    Response.StatusCode = 400;
+                    return new ObjectResult(new {msg = "A idade deve ser maior do que 0 (zero)"});
+                }
+
+                Vitima vitima = new Vitima();
+
+                vitima.Nome = vitimaTemp.Nome;
+                vitima.CPF = vitimaTemp.CPF;
+                vitima.Idade = vitimaTemp.Idade;
+                vitima.Status = true;
+
+                database.vitimas.Add(vitima);
+                database.SaveChanges();
+
+                Response.StatusCode = 201;
+                return new ObjectResult("");
+            }
+            catch(Exception)
             {
                 Response.StatusCode = 400;
-                return new ObjectResult(new {msg = "O nome do criminoso deve ter mais de um caracter"});
+                return new ObjectResult(new {msg = "Todos campos devem ser passados"});
             }
-            if(vitimaTemp.CPF.Length != 11)
-            {
-                Response.StatusCode = 400;
-                return new ObjectResult(new {msg = "O CPF deve ter 11 digitos"});
-            }
-            if(vitimaTemp.Idade <= 0)
-            {
-                Response.StatusCode = 400;
-                return new ObjectResult(new {msg = "A idade deve ser maior do que 0 (zero)"});
-            }
-
-            Vitima vitima = new Vitima();
-
-            vitima.Nome = vitimaTemp.Nome;
-            vitima.CPF = vitimaTemp.CPF;
-            vitima.Idade = vitimaTemp.Idade;
-            vitima.Status = true;
-
-            database.vitimas.Add(vitima);
-            database.SaveChanges();
-
-            Response.StatusCode = 201;
-            return new ObjectResult("");
         }
 
         [HttpPatch]
@@ -146,7 +154,7 @@ namespace projeto.Controllers
             catch(Exception)
             {
                 Response.StatusCode = 404;
-                return new ObjectResult("");
+                return new ObjectResult(new {msg = "Id de vitima é inválido"});
             }
         }
     }

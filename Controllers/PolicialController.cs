@@ -60,41 +60,49 @@ namespace projeto.Controllers
             catch (Exception)
             {
                 Response.StatusCode = 400;
-                return new ObjectResult("");
+                return new ObjectResult(new {msg = "Id não encontrado"});
             }
         }
 
         [HttpPost]
         public IActionResult Post([FromBody]PolicialDTO policialTemp)
         {
-            if (policialTemp.Nome.Length <= 1)
+            try
+            {
+                if (policialTemp.Nome.Length <= 1)
+                {
+                    Response.StatusCode = 400;
+                    return new ObjectResult(new {msg = "O nome do policial deve ter mais de um caracter"});
+                }
+                if(policialTemp.Funcional.Length <= 1)
+                {
+                    Response.StatusCode = 400;
+                    return new ObjectResult(new {msg = "A funcional do policial deve ter mais de um caracter"});
+                }
+                if(policialTemp.Patente.Length <= 1)
+                {
+                    Response.StatusCode = 400;
+                    return new ObjectResult(new {msg = "A patente do policial deve ter mais de um caracter"});
+                }
+
+                Policial policial = new Policial();
+
+                policial.Nome = policialTemp.Nome;
+                policial.Funcional = policialTemp.Funcional;
+                policial.Patente = policialTemp.Patente;
+                policial.Status = true;
+
+                database.policiais.Add(policial);
+                database.SaveChanges();
+
+                Response.StatusCode = 201;
+                return new ObjectResult("");
+            }
+            catch(Exception)
             {
                 Response.StatusCode = 400;
-                return new ObjectResult(new {msg = "O nome do policial deve ter mais de um caracter"});
+                return new ObjectResult(new {msg = "Todos campos devem ser passados"});
             }
-            if(policialTemp.Funcional.Length <= 1)
-            {
-                Response.StatusCode = 400;
-                return new ObjectResult(new {msg = "A funcional do policial deve ter mais de um caracter"});
-            }
-            if(policialTemp.Patente.Length <= 1)
-            {
-                Response.StatusCode = 400;
-                return new ObjectResult(new {msg = "A patente do policial deve ter mais de um caracter"});
-            }
-
-            Policial policial = new Policial();
-
-            policial.Nome = policialTemp.Nome;
-            policial.Funcional = policialTemp.Funcional;
-            policial.Patente = policialTemp.Patente;
-            policial.Status = true;
-
-            database.policiais.Add(policial);
-            database.SaveChanges();
-
-            Response.StatusCode = 201;
-            return new ObjectResult("");
         }
 
         [HttpPatch]
@@ -148,7 +156,7 @@ namespace projeto.Controllers
             catch(Exception)
             {
                 Response.StatusCode = 404;
-                return new ObjectResult("");
+                return new ObjectResult(new {msg = "Id do policial é inválido"});
             }
         }
     }

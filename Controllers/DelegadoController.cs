@@ -61,50 +61,58 @@ namespace projeto.Controllers
             catch(Exception)
             {
                 Response.StatusCode = 400;
-                return new ObjectResult("");
+                return new ObjectResult(new {msg = "Id não encontrado"});
             }
         }
 
         [HttpPost]
         public IActionResult Post([FromBody]DelegadoDTO delegadoTemp)
         {
-            if (delegadoTemp.Nome.Length <= 1)
+            try
+            {
+                if (delegadoTemp.Nome.Length <= 1)
+                {
+                    Response.StatusCode = 400;
+                    return new ObjectResult(new {msg = "O nome de delegado deve ter mais de um caracter"});
+                }
+
+                if(delegadoTemp.CPF.Length != 11)
+                {
+                    Response.StatusCode = 400;
+                    return new ObjectResult(new {msg = "O CPF deve ter 11 (onze) digitos"});
+                }
+
+                if(delegadoTemp.Funcional.Length <= 1)
+                {
+                    Response.StatusCode = 400;
+                    return new ObjectResult(new {msg = "A funcional do delegado deve ter mais de um caracter"});
+                }
+
+                if(delegadoTemp.Turno.Length <= 1)
+                {
+                    Response.StatusCode = 400;
+                    return new ObjectResult(new {msg = "O turno de delegado deve ter mais de um caracter"});
+                }
+
+                Delegado delegado = new Delegado();
+
+                delegado.Nome = delegadoTemp.Nome;
+                delegado.CPF = delegadoTemp.CPF;
+                delegado.Funcional = delegadoTemp.Funcional;
+                delegado.Turno = delegadoTemp.Turno;
+                delegado.Status = true;
+
+                database.delegados.Add(delegado);
+                database.SaveChanges();
+
+                Response.StatusCode = 201;
+                return new ObjectResult("");
+            }
+            catch(Exception)
             {
                 Response.StatusCode = 400;
-                return new ObjectResult(new {msg = "O nome de delegado deve ter mais de um caracter"});
+                return new ObjectResult(new {msg = "Todos campos devem ser passados"});
             }
-
-            if(delegadoTemp.CPF.Length != 11)
-            {
-                Response.StatusCode = 400;
-                return new ObjectResult(new {msg = "O CPF deve ter 11 (onze) digitos"});
-            }
-
-            if(delegadoTemp.Funcional.Length <= 1)
-            {
-                Response.StatusCode = 400;
-                return new ObjectResult(new {msg = "A funcional do delegado deve ter mais de um caracter"});
-            }
-
-            if(delegadoTemp.Turno.Length <= 1)
-            {
-                Response.StatusCode = 400;
-                return new ObjectResult(new {msg = "O turno de delegado deve ter mais de um caracter"});
-            }
-
-            Delegado delegado = new Delegado();
-
-            delegado.Nome = delegadoTemp.Nome;
-            delegado.CPF = delegadoTemp.CPF;
-            delegado.Funcional = delegadoTemp.Funcional;
-            delegado.Turno = delegadoTemp.Turno;
-            delegado.Status = true;
-
-            database.delegados.Add(delegado);
-            database.SaveChanges();
-
-            Response.StatusCode = 201;
-            return new ObjectResult("");
         }
 
         [HttpPatch]
@@ -159,7 +167,7 @@ namespace projeto.Controllers
             catch(Exception)
             {
                 Response.StatusCode = 404;
-                return new ObjectResult("");
+                return new ObjectResult(new {msg = "Id do delegado é inválido"});
             }
         }
     }
