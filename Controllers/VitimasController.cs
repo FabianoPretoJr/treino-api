@@ -5,6 +5,8 @@ using System.Linq;
 using System;
 using Microsoft.EntityFrameworkCore;
 using projeto.DTO;
+using projeto.Container;
+using System.Collections.Generic;
 
 namespace projeto.Controllers
 {
@@ -13,17 +15,31 @@ namespace projeto.Controllers
     public class VitimasController : ControllerBase
     {
         private readonly ApplicationDbContext database;
+        private HATEOAS.HATEOAS HATEOAS;
 
         public VitimasController(ApplicationDbContext database)
         {
             this.database = database;
+            HATEOAS = new HATEOAS.HATEOAS("localhost:5001/api/v1/vitimas");
+            HATEOAS.AddAction("GET_INFO", "GET");
+            HATEOAS.AddAction("EDIT_PRODUCT", "PATCH");
+            HATEOAS.AddAction("DELETE_PRODUCT", "DELETE");
         }
 
         [HttpGet]
         public IActionResult Get()
         {
             var vitimas = database.vitimas.Where(v => v.Status == true).Include(v => v.Crimes).ThenInclude(v => v.Criminoso).ToList();
-            return Ok(vitimas);
+
+            List<VitimaContainer> vitimasHATEOAS = new List<VitimaContainer>();
+            foreach(var vitima in vitimas)
+            {
+                VitimaContainer vitimaHATEOAS = new VitimaContainer();
+                vitimaHATEOAS.vitima = vitima;
+                vitimaHATEOAS.links = HATEOAS.GetActions(vitima.Id.ToString());
+                vitimasHATEOAS.Add(vitimaHATEOAS);
+            }
+            return Ok(vitimasHATEOAS);
         }
 
         [HttpGet("{id}")]
@@ -31,8 +47,13 @@ namespace projeto.Controllers
         {
             try
             {
-                var vitimas = database.vitimas.First(v => v.Id == id);
-                return Ok(vitimas);
+                var vitima = database.vitimas.First(v => v.Id == id);
+
+                VitimaContainer vitimaHATEOAS = new VitimaContainer();
+                vitimaHATEOAS.vitima = vitima;
+                vitimaHATEOAS.links = HATEOAS.GetActions(vitima.Id.ToString());
+                
+                return Ok(vitimaHATEOAS);
             }
             catch (Exception)
             {

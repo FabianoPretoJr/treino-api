@@ -5,6 +5,8 @@ using System.Linq;
 using System;
 using Microsoft.EntityFrameworkCore;
 using projeto.DTO;
+using projeto.Container;
+using System.Collections.Generic;
 
 namespace projeto.Controllers
 {
@@ -13,17 +15,32 @@ namespace projeto.Controllers
     public class CriminososController : ControllerBase
     {
         private readonly ApplicationDbContext database;
+        private HATEOAS.HATEOAS HATEOAS;
 
         public CriminososController(ApplicationDbContext database)
         {
             this.database = database;
+            HATEOAS = new HATEOAS.HATEOAS("localhost:5001/api/v1/criminosos");
+            HATEOAS.AddAction("GET_INFO", "GET");
+            HATEOAS.AddAction("EDIT_PRODUCT", "PATCH");
+            HATEOAS.AddAction("DELETE_PRODUCT", "DELETE");
         }
 
         [HttpGet]
         public IActionResult Get()
         {
             var criminosos = database.criminosos.Where(c => c.Status == true).Include(c => c.Crimes).ThenInclude(c => c.Vitima).ToList();
-            return Ok(criminosos);
+
+            List<CriminosoContainer> criminososHATEOAS = new List<CriminosoContainer>();
+            foreach(var criminoso in criminosos)
+            {
+                CriminosoContainer criminosoHATEOAS = new CriminosoContainer();
+                criminosoHATEOAS.criminoso = criminoso;
+                criminosoHATEOAS.links = HATEOAS.GetActions(criminoso.Id.ToString());
+                criminososHATEOAS.Add(criminosoHATEOAS);
+            }
+
+            return Ok(criminososHATEOAS);
         }
 
         [HttpGet("{id}")]
@@ -32,7 +49,12 @@ namespace projeto.Controllers
             try
             {
                 Criminoso criminoso = database.criminosos.First(c => c.Id == id);
-                return Ok(criminoso);
+
+                CriminosoContainer criminosoHATEOAS = new CriminosoContainer();
+                criminosoHATEOAS.criminoso = criminoso;
+                criminosoHATEOAS.links = HATEOAS.GetActions(criminoso.Id.ToString());
+
+                return Ok(criminosoHATEOAS);
             }
             catch (Exception)
             {

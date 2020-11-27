@@ -4,6 +4,8 @@ using projeto.Data;
 using System.Linq;
 using System;
 using projeto.DTO;
+using projeto.Container;
+using System.Collections.Generic;
 
 namespace projeto.Controllers
 {
@@ -12,17 +14,33 @@ namespace projeto.Controllers
     public class PolicialController : ControllerBase
     {
         private readonly ApplicationDbContext database;
+        private HATEOAS.HATEOAS HATEOAS;
 
         public PolicialController(ApplicationDbContext database)
         {
             this.database = database;
+            HATEOAS = new HATEOAS.HATEOAS("localhost:5001/api/v1/policial");
+            HATEOAS.AddAction("GET_INFO", "GET");
+            HATEOAS.AddAction("EDIT_PRODUCT", "PATCH");
+            HATEOAS.AddAction("DELETE_PRODUCT", "DELETE");
         }
 
         [HttpGet]
         public IActionResult Get()
         {
             var policiais = database.policiais.Where(p => p.Status == true).ToList();
-            return Ok(policiais);
+            
+            List<PolicialContainer> policiaisHATEOAS = new List<PolicialContainer>();
+            foreach(var policial in policiais)
+            {
+                PolicialContainer policialHATEOAS = new PolicialContainer();
+
+                policialHATEOAS.policial = policial;
+                policialHATEOAS.links = HATEOAS.GetActions(policial.Id.ToString());
+                policiaisHATEOAS.Add(policialHATEOAS);
+            }
+
+            return Ok(policiaisHATEOAS);
         }
 
         [HttpGet("{id}")]
@@ -31,7 +49,13 @@ namespace projeto.Controllers
             try
             {
                 var policial = database.policiais.First(p => p.Id == id);
-                return Ok(policial);
+                
+                PolicialContainer policialHATEOAS = new PolicialContainer();
+
+                policialHATEOAS.policial = policial;
+                policialHATEOAS.links = HATEOAS.GetActions(policial.Id.ToString());
+
+                return Ok(policialHATEOAS);
             }
             catch (Exception)
             {

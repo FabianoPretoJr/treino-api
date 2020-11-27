@@ -4,6 +4,8 @@ using projeto.Models;
 using System;
 using System.Linq;
 using projeto.DTO;
+using projeto.Container;
+using System.Collections.Generic;
 
 namespace projeto.Controllers
 {
@@ -12,17 +14,32 @@ namespace projeto.Controllers
     public class LegistasController : ControllerBase
     {
         private readonly ApplicationDbContext database;
+        private HATEOAS.HATEOAS HATEOAS;
 
         public LegistasController(ApplicationDbContext database)
         {
             this.database = database;
+            HATEOAS = new HATEOAS.HATEOAS("localhost:5001/api/v1/legistas");
+            HATEOAS.AddAction("GET_INFO", "GET");
+            HATEOAS.AddAction("EDIT_PRODUCT", "PATCH");
+            HATEOAS.AddAction("DELETE_PRODUCT", "DELETE");
         }
 
         [HttpGet]
         public IActionResult Get()
         {
             var legistas = database.legistas.Where(l => l.Status == true).ToList();
-            return Ok(legistas);
+            
+            List<LegistaContainer> legistasHATEOAS = new List<LegistaContainer>();
+            foreach(var legista in legistas)
+            {
+                LegistaContainer legistaHATEOAS = new LegistaContainer();
+                legistaHATEOAS.legista = legista;
+                legistaHATEOAS.links = HATEOAS.GetActions(legista.Id.ToString());
+                legistasHATEOAS.Add(legistaHATEOAS);
+            }
+
+            return Ok(legistasHATEOAS);
         }
 
         [HttpGet("{id}")]
@@ -31,7 +48,12 @@ namespace projeto.Controllers
             try
             {
                 var legista = database.legistas.First(l => l.Id == id);
-                return Ok(legista);
+                
+                LegistaContainer legistaHATEOAS = new LegistaContainer();
+                legistaHATEOAS.legista = legista;
+                legistaHATEOAS.links = HATEOAS.GetActions(legista.Id.ToString());
+
+                return Ok(legistaHATEOAS);
             }
             catch (Exception)
             {
@@ -58,7 +80,7 @@ namespace projeto.Controllers
             Legista legista = new Legista();
 
             legista.Nome = legistaTemp.Nome;
-            legista.CRM = legista.CRM;
+            legista.CRM = legistaTemp.CRM;
             legista.Status = true;
 
             database.legistas.Add(legista);

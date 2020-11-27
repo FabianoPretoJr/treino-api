@@ -5,6 +5,8 @@ using System.Linq;
 using System;
 using Microsoft.EntityFrameworkCore;
 using projeto.DTO;
+using projeto.Container;
+using System.Collections.Generic;
 
 namespace projeto.Controllers
 {
@@ -13,37 +15,95 @@ namespace projeto.Controllers
     public class CrimeController : ControllerBase
     {
         private readonly ApplicationDbContext database;
+        private HATEOAS.HATEOAS HATEOAS;
+
         public CrimeController(ApplicationDbContext database)
         {
             this.database = database;
+            HATEOAS = new HATEOAS.HATEOAS("localhost:5001/api/v1/crime");
+            HATEOAS.AddAction("GET_INFO", "GET");
+            HATEOAS.AddAction("EDIT_PRODUCT", "PATCH");
+            HATEOAS.AddAction("DELETE_PRODUCT", "DELETE");
         }
 
         [HttpGet]
         public IActionResult Get()
         {
             var crimes = database.crimes.Include(c => c.Criminoso).Include(c => c.Vitima).ToList();
-            return Ok(crimes);
+            
+            List<CrimeContainer> crimesHATEOAS = new List<CrimeContainer>();
+            foreach(var crime in crimes)
+            {
+                CrimeContainer crimeHATEOAS = new CrimeContainer();
+
+                crimeHATEOAS.crime = crime;
+                crimeHATEOAS.linksCriminoso = HATEOAS.GetActions("GetByCriminoso/" + crime.CriminosoID.ToString());
+                crimeHATEOAS.linksVitima = HATEOAS.GetActions("GetByVitima/" + crime.VitimaID.ToString());
+                crimeHATEOAS.linksPolicial = HATEOAS.GetActions("GetByPolicial/" + crime.PolicialID.ToString());
+                crimesHATEOAS.Add(crimeHATEOAS);
+            }
+
+            return Ok(crimesHATEOAS);
         }
 
         [HttpGet("GetByCriminoso/{id}")]
         public IActionResult GetByCriminoso(int id)
         {
             var crimes = database.crimes.Where(c => c.CriminosoID == id).Include(c => c.Vitima).Include(c => c.Policial).ToList();
-            return Ok(crimes);
+            
+            List<CrimeContainer> crimesHATEOAS = new List<CrimeContainer>();
+            foreach(var crime in crimes)
+            {
+                CrimeContainer crimeHATEOAS = new CrimeContainer();
+
+                crimeHATEOAS.crime = crime;
+                crimeHATEOAS.linksCriminoso = HATEOAS.GetActions("GetByCriminoso/" + crime.CriminosoID.ToString());
+                crimeHATEOAS.linksVitima = HATEOAS.GetActions("GetByVitima/" + crime.VitimaID.ToString());
+                crimeHATEOAS.linksPolicial = HATEOAS.GetActions("GetByPolicial/" + crime.PolicialID.ToString());
+                crimesHATEOAS.Add(crimeHATEOAS);
+            }
+
+            return Ok(crimesHATEOAS);
         }
 
         [HttpGet("GetByVitima/{id}")]
         public IActionResult GetByVitima(int id)
         {
             var crimes = database.crimes.Where(c => c.VitimaID == id).Include(c => c.Criminoso).Include(c => c.Policial).ToList();
-            return Ok(crimes);
+            
+            List<CrimeContainer> crimesHATEOAS = new List<CrimeContainer>();
+            foreach(var crime in crimes)
+            {
+                CrimeContainer crimeHATEOAS = new CrimeContainer();
+
+                crimeHATEOAS.crime = crime;
+                crimeHATEOAS.linksCriminoso = HATEOAS.GetActions("GetByCriminoso/" + crime.CriminosoID.ToString());
+                crimeHATEOAS.linksVitima = HATEOAS.GetActions("GetByVitima/" + crime.VitimaID.ToString());
+                crimeHATEOAS.linksPolicial = HATEOAS.GetActions("GetByPolicial/" + crime.PolicialID.ToString());
+                crimesHATEOAS.Add(crimeHATEOAS);
+            }
+
+            return Ok(crimesHATEOAS);
         }
 
         [HttpGet("GetByPolicial/{id}")]
         public IActionResult GetByPolicial(int id)
         {
             var crimes = database.crimes.Where(c => c.PolicialID == id).Include(c => c.Criminoso).Include(c => c.Vitima).ToList();
-            return Ok(crimes);
+            
+            List<CrimeContainer> crimesHATEOAS = new List<CrimeContainer>();
+            foreach(var crime in crimes)
+            {
+                CrimeContainer crimeHATEOAS = new CrimeContainer();
+
+                crimeHATEOAS.crime = crime;
+                crimeHATEOAS.linksCriminoso = HATEOAS.GetActions("GetByCriminoso/" + crime.CriminosoID.ToString());
+                crimeHATEOAS.linksVitima = HATEOAS.GetActions("GetByVitima/" + crime.VitimaID.ToString());
+                crimeHATEOAS.linksPolicial = HATEOAS.GetActions("GetByPolicial/" + crime.PolicialID.ToString());
+                crimesHATEOAS.Add(crimeHATEOAS);
+            }
+
+            return Ok(crimesHATEOAS);
         }
 
         [HttpPost]

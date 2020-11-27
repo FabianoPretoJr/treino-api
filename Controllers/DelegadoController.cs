@@ -4,6 +4,8 @@ using projeto.Data;
 using System.Linq;
 using System;
 using projeto.DTO;
+using projeto.Container;
+using System.Collections.Generic;
 
 namespace projeto.Controllers
 {
@@ -12,17 +14,33 @@ namespace projeto.Controllers
     public class DelegadoController : ControllerBase
     {
         private readonly ApplicationDbContext database;
+        private HATEOAS.HATEOAS HATEOAS;
 
         public DelegadoController(ApplicationDbContext database)
         {
             this.database = database;
+            HATEOAS = new HATEOAS.HATEOAS("localhost:5001/api/v1/delegado");
+            HATEOAS.AddAction("GET_INFO", "GET");
+            HATEOAS.AddAction("EDIT_PRODUCT", "PATCH");
+            HATEOAS.AddAction("DELETE_PRODUCT", "DELETE");
         }
 
         [HttpGet]
         public IActionResult Get()
         {
             var delegados = database.delegados.Where(d => d.Status == true).ToList();
-            return Ok(delegados);
+            
+            List<DelegadoContainer> delegadosHATEOAS = new List<DelegadoContainer>();
+            foreach(var delegado in delegados)
+            {
+                DelegadoContainer delegadoHATEOAS = new DelegadoContainer();
+
+                delegadoHATEOAS.delegado = delegado;
+                delegadoHATEOAS.links = HATEOAS.GetActions(delegado.Id.ToString());
+                delegadosHATEOAS.Add(delegadoHATEOAS);
+            }
+
+            return Ok(delegadosHATEOAS);
         }
 
         [HttpGet("{id}")]
@@ -31,7 +49,14 @@ namespace projeto.Controllers
             try
             {
                 var delegado = database.delegados.First(d => d.Id == id);
-                return Ok(delegado);
+                
+                DelegadoContainer delegadoHATEOAS = new DelegadoContainer();
+
+                delegadoHATEOAS.delegado = delegado;
+                delegadoHATEOAS.links = HATEOAS.GetActions(delegado.Id.ToString());
+            
+
+                return Ok(delegadoHATEOAS);
             }
             catch(Exception)
             {

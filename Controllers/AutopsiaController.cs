@@ -5,6 +5,8 @@ using projeto.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using projeto.DTO;
+using projeto.Container;
+using System.Collections.Generic;
 
 namespace projeto.Controllers
 {
@@ -13,30 +15,72 @@ namespace projeto.Controllers
     public class AutopsiaController : ControllerBase
     {
         private readonly ApplicationDbContext database;
+        private HATEOAS.HATEOAS HATEOAS;
+
         public AutopsiaController(ApplicationDbContext database)
         {
             this.database = database;
+            HATEOAS = new HATEOAS.HATEOAS("localhost:5001/api/v1/autopsia");
+            HATEOAS.AddAction("GET_INFO", "GET");
+            HATEOAS.AddAction("EDIT_PRODUCT", "PATCH");
+            HATEOAS.AddAction("DELETE_PRODUCT", "DELETE");
         }
 
         [HttpGet]
         public IActionResult Get()
         {
             var autopsias = database.autopsias.Include(a => a.Vitima).Include(a => a.Legista).ToList();
-            return Ok(autopsias);
+            
+            List<AutopsiaContainer> autopsiasHATEOAS = new List<AutopsiaContainer>();
+            foreach(var autopsia in autopsias)
+            {
+                AutopsiaContainer autopsiaHATEOAS = new AutopsiaContainer();
+
+                autopsiaHATEOAS.autopsia = autopsia;
+                autopsiaHATEOAS.linksVitima = HATEOAS.GetActions("GetByVitima/" + autopsia.VitimaID.ToString());
+                autopsiaHATEOAS.linksLegista = HATEOAS.GetActions("GetByLegista/" + autopsia.LegistaID.ToString());
+                autopsiasHATEOAS.Add(autopsiaHATEOAS);
+            }
+
+            return Ok(autopsiasHATEOAS);
         }
 
-        [HttpGet("GetByVitimica/{id}")]
+        [HttpGet("GetByVitima/{id}")]
         public IActionResult GetByVitima(int id)
         {
             var autopsias = database.autopsias.Where(a => a.VitimaID == id).Include(a => a.Legista).ToList();
-            return Ok(autopsias);
+            
+            List<AutopsiaContainer> autopsiasHATEOAS = new List<AutopsiaContainer>();
+            foreach(var autopsia in autopsias)
+            {
+                AutopsiaContainer autopsiaHATEOAS = new AutopsiaContainer();
+
+                autopsiaHATEOAS.autopsia = autopsia;
+                autopsiaHATEOAS.linksVitima = HATEOAS.GetActions("GetByVitima/" + autopsia.VitimaID.ToString());
+                autopsiaHATEOAS.linksLegista = HATEOAS.GetActions("GetByLegista/" + autopsia.LegistaID.ToString());
+                autopsiasHATEOAS.Add(autopsiaHATEOAS);
+            }
+
+            return Ok(autopsiasHATEOAS);
         }
 
         [HttpGet("GetByLegista/{id}")]
         public IActionResult GetByLegista(int id)
         {
             var autopsias = database.autopsias.Where(a => a.LegistaID == id).Include(a => a.Vitima).ToList();
-            return Ok(autopsias);
+            
+            List<AutopsiaContainer> autopsiasHATEOAS = new List<AutopsiaContainer>();
+            foreach(var autopsia in autopsias)
+            {
+                AutopsiaContainer autopsiaHATEOAS = new AutopsiaContainer();
+
+                autopsiaHATEOAS.autopsia = autopsia;
+                autopsiaHATEOAS.linksVitima = HATEOAS.GetActions("GetByVitima/" + autopsia.VitimaID.ToString());
+                autopsiaHATEOAS.linksLegista = HATEOAS.GetActions("GetByLegista/" + autopsia.LegistaID.ToString());
+                autopsiasHATEOAS.Add(autopsiaHATEOAS);
+            }
+
+            return Ok(autopsiasHATEOAS);
         }
 
         [HttpPost]

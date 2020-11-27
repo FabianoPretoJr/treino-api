@@ -4,6 +4,8 @@ using projeto.Data;
 using System.Linq;
 using System;
 using projeto.DTO;
+using projeto.Container;
+using System.Collections.Generic;
 
 namespace projeto.Controllers
 {
@@ -12,17 +14,33 @@ namespace projeto.Controllers
     public class DelegaciaController : ControllerBase
     {
         private readonly ApplicationDbContext database;
+        private HATEOAS.HATEOAS HATEOAS;
 
         public DelegaciaController(ApplicationDbContext database)
         {
             this.database = database;
+            HATEOAS = new HATEOAS.HATEOAS("localhost:5001/api/v1/delegacia");
+            HATEOAS.AddAction("GET_INFO", "GET");
+            HATEOAS.AddAction("EDIT_PRODUCT", "PATCH");
+            HATEOAS.AddAction("DELETE_PRODUCT", "DELETE");
         }
 
         [HttpGet]
         public IActionResult Get()
         {
             var delegacias = database.delegacias.Where(d => d.Status == true).ToList();
-            return Ok(delegacias);
+            
+            List<DelegaciaContainer> delegaciasHATEOAS = new List<DelegaciaContainer>();
+            foreach(var delegacia in delegacias)
+            {
+                DelegaciaContainer delegaciaHATEOAS = new DelegaciaContainer();
+
+                delegaciaHATEOAS.delegacia = delegacia;
+                delegaciaHATEOAS.links = HATEOAS.GetActions(delegacia.Id.ToString());
+                delegaciasHATEOAS.Add(delegaciaHATEOAS);
+            }
+
+            return Ok(delegaciasHATEOAS);
         }
 
         [HttpGet("{id}")]
@@ -31,7 +49,13 @@ namespace projeto.Controllers
             try
             {
                 var delegacia = database.delegacias.First(d => d.Id == id);
-                return Ok(delegacia);
+                
+                DelegaciaContainer delegaciaHATEOAS = new DelegaciaContainer();
+
+                delegaciaHATEOAS.delegacia = delegacia;
+                delegaciaHATEOAS.links = HATEOAS.GetActions(delegacia.Id.ToString());
+
+                return Ok(delegaciaHATEOAS);
             }
             catch(Exception)
             {
