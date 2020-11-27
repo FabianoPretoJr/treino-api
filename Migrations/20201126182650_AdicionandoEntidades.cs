@@ -135,12 +135,15 @@ namespace projeto.Migrations
                 {
                     CriminosoID = table.Column<int>(nullable: false),
                     VitimaID = table.Column<int>(nullable: false),
+                    PolicialID = table.Column<int>(nullable: false),
                     Descricao = table.Column<string>(nullable: true),
-                    Data = table.Column<DateTime>(nullable: false)
+                    Data = table.Column<DateTime>(nullable: false),
+                    DelegaciaId = table.Column<int>(nullable: true),
+                    DelegadoId = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_crimes", x => new { x.CriminosoID, x.VitimaID });
+                    table.PrimaryKey("PK_crimes", x => new { x.CriminosoID, x.VitimaID, x.PolicialID });
                     table.ForeignKey(
                         name: "FK_crimes_criminosos_CriminosoID",
                         column: x => x.CriminosoID,
@@ -148,54 +151,25 @@ namespace projeto.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_crimes_vitimas_VitimaID",
-                        column: x => x.VitimaID,
-                        principalTable: "vitimas",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "prissoes",
-                columns: table => new
-                {
-                    PolicialID = table.Column<int>(nullable: false),
-                    CrimosoID = table.Column<int>(nullable: false),
-                    VitimaID = table.Column<int>(nullable: false),
-                    CriminosoId = table.Column<int>(nullable: true),
-                    Data = table.Column<DateTime>(nullable: false),
-                    DelegaciaId = table.Column<int>(nullable: true),
-                    DelegadoId = table.Column<int>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_prissoes", x => new { x.PolicialID, x.CrimosoID, x.VitimaID });
-                    table.ForeignKey(
-                        name: "FK_prissoes_criminosos_CriminosoId",
-                        column: x => x.CriminosoId,
-                        principalTable: "criminosos",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_prissoes_delegacias_DelegaciaId",
+                        name: "FK_crimes_delegacias_DelegaciaId",
                         column: x => x.DelegaciaId,
                         principalTable: "delegacias",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_prissoes_delegados_DelegadoId",
+                        name: "FK_crimes_delegados_DelegadoId",
                         column: x => x.DelegadoId,
                         principalTable: "delegados",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_prissoes_policiais_PolicialID",
+                        name: "FK_crimes_policiais_PolicialID",
                         column: x => x.PolicialID,
                         principalTable: "policiais",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_prissoes_vitimas_VitimaID",
+                        name: "FK_crimes_vitimas_VitimaID",
                         column: x => x.VitimaID,
                         principalTable: "vitimas",
                         principalColumn: "Id",
@@ -208,28 +182,23 @@ namespace projeto.Migrations
                 column: "LegistaID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_crimes_VitimaID",
+                name: "IX_crimes_DelegaciaId",
                 table: "crimes",
-                column: "VitimaID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_prissoes_CriminosoId",
-                table: "prissoes",
-                column: "CriminosoId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_prissoes_DelegaciaId",
-                table: "prissoes",
                 column: "DelegaciaId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_prissoes_DelegadoId",
-                table: "prissoes",
+                name: "IX_crimes_DelegadoId",
+                table: "crimes",
                 column: "DelegadoId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_prissoes_VitimaID",
-                table: "prissoes",
+                name: "IX_crimes_PolicialID",
+                table: "crimes",
+                column: "PolicialID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_crimes_VitimaID",
+                table: "crimes",
                 column: "VitimaID");
         }
 
@@ -240,9 +209,6 @@ namespace projeto.Migrations
 
             migrationBuilder.DropTable(
                 name: "crimes");
-
-            migrationBuilder.DropTable(
-                name: "prissoes");
 
             migrationBuilder.DropTable(
                 name: "legistas");

@@ -4,6 +4,7 @@ using projeto.Data;
 using System.Linq;
 using System;
 using Microsoft.EntityFrameworkCore;
+using projeto.DTO;
 
 namespace projeto.Controllers
 {
@@ -41,20 +42,24 @@ namespace projeto.Controllers
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody]Criminoso criminoso)
+        public IActionResult Post([FromBody]CriminosoDTO criminosoTemp)
         {
-            if (criminoso.Nome.Length <= 1)
+            if (criminosoTemp.Nome.Length <= 1)
             {
                 Response.StatusCode = 400;
                 return new ObjectResult(new {msg = "O nome do criminoso deve ter mais de um caracter"});
             }
 
-            if(criminoso.CPF.Length != 11)
+            if(criminosoTemp.CPF.Length != 11)
             {
                 Response.StatusCode = 400;
                 return new ObjectResult(new {msg = "O CPF deve ter 11 digitos"});
             }
 
+            Criminoso criminoso = new Criminoso();
+
+            criminoso.Nome = criminosoTemp.Nome;
+            criminoso.CPF = criminosoTemp.CPF;
             criminoso.Status = true;
             database.criminosos.Add(criminoso);
             database.SaveChanges();
@@ -64,18 +69,18 @@ namespace projeto.Controllers
         }
 
         [HttpPatch]
-        public IActionResult Patch([FromBody]Criminoso criminoso)
+        public IActionResult Patch([FromBody]CriminosoDTO criminosoTemp)
         {
-            if(criminoso.Id > 0)
+            if(criminosoTemp.Id > 0)
             {
                 try
                 {
-                    var cri = database.criminosos.First(c => c.Id == criminoso.Id);
+                    var cri = database.criminosos.First(c => c.Id == criminosoTemp.Id);
 
                     if(cri != null)
                     {
-                        cri.Nome = criminoso.Nome != null ? criminoso.Nome : cri.Nome;
-                        cri.CPF = criminoso.CPF != null ? criminoso.CPF : cri.CPF;
+                        cri.Nome = criminosoTemp.Nome != null ? criminosoTemp.Nome : cri.Nome;
+                        cri.CPF = criminosoTemp.CPF != null ? criminosoTemp.CPF : cri.CPF;
                         database.SaveChanges();
 
                         return Ok(); 

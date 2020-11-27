@@ -9,7 +9,7 @@ using projeto.Data;
 namespace projeto.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20201123145618_AdicionandoEntidades")]
+    [Migration("20201126182650_AdicionandoEntidades")]
     partial class AdicionandoEntidades
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -48,13 +48,28 @@ namespace projeto.Migrations
                     b.Property<int>("VitimaID")
                         .HasColumnType("int");
 
+                    b.Property<int>("PolicialID")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("Data")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<int?>("DelegaciaId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DelegadoId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Descricao")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");
 
-                    b.HasKey("CriminosoID", "VitimaID");
+                    b.HasKey("CriminosoID", "VitimaID", "PolicialID");
+
+                    b.HasIndex("DelegaciaId");
+
+                    b.HasIndex("DelegadoId");
+
+                    b.HasIndex("PolicialID");
 
                     b.HasIndex("VitimaID");
 
@@ -173,42 +188,6 @@ namespace projeto.Migrations
                     b.ToTable("policiais");
                 });
 
-            modelBuilder.Entity("projeto.Models.Prissao", b =>
-                {
-                    b.Property<int>("PolicialID")
-                        .HasColumnType("int");
-
-                    b.Property<int>("CrimosoID")
-                        .HasColumnType("int");
-
-                    b.Property<int>("VitimaID")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("CriminosoId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("Data")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int?>("DelegaciaId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("DelegadoId")
-                        .HasColumnType("int");
-
-                    b.HasKey("PolicialID", "CrimosoID", "VitimaID");
-
-                    b.HasIndex("CriminosoId");
-
-                    b.HasIndex("DelegaciaId");
-
-                    b.HasIndex("DelegadoId");
-
-                    b.HasIndex("VitimaID");
-
-                    b.ToTable("prissoes");
-                });
-
             modelBuilder.Entity("projeto.Models.Vitima", b =>
                 {
                     b.Property<int>("Id")
@@ -255,19 +234,6 @@ namespace projeto.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("projeto.Models.Vitima", "Vitima")
-                        .WithMany("Crimes")
-                        .HasForeignKey("VitimaID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("projeto.Models.Prissao", b =>
-                {
-                    b.HasOne("projeto.Models.Criminoso", "Criminoso")
-                        .WithMany()
-                        .HasForeignKey("CriminosoId");
-
                     b.HasOne("projeto.Models.Delegacia", "Delegacia")
                         .WithMany()
                         .HasForeignKey("DelegaciaId");
@@ -283,7 +249,7 @@ namespace projeto.Migrations
                         .IsRequired();
 
                     b.HasOne("projeto.Models.Vitima", "Vitima")
-                        .WithMany()
+                        .WithMany("Crimes")
                         .HasForeignKey("VitimaID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

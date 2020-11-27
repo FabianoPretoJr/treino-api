@@ -3,6 +3,7 @@ using projeto.Models;
 using projeto.Data;
 using System.Linq;
 using System;
+using projeto.DTO;
 
 namespace projeto.Controllers
 {
@@ -40,26 +41,31 @@ namespace projeto.Controllers
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody]Delegacia delegacia)
+        public IActionResult Post([FromBody]DelegaciaDTO delegaciaTemp)
         {
-            if (delegacia.Endereco.Length <= 1)
+            if (delegaciaTemp.Endereco.Length <= 1)
             {
                 Response.StatusCode = 400;
                 return new ObjectResult(new {msg = "O endereço da delegacia deve ter mais de um caracter"});
             }
 
-            if(delegacia.Telefone.Length < 8)
+            if(delegaciaTemp.Telefone.Length < 8)
             {
                 Response.StatusCode = 400;
                 return new ObjectResult(new {msg = "O telefone da delegacia deve ter no mínimo 8 (oito) caracteres"});
             }
 
-            if(delegacia.Batalhao.Length <= 1)
+            if(delegaciaTemp.Batalhao.Length <= 1)
             {
                 Response.StatusCode = 400;
                 return new ObjectResult(new {msg = "O número de batalhão da delegacia deve ter mais de um caracter"});
             }
 
+            Delegacia delegacia = new Delegacia();
+
+            delegacia.Endereco = delegaciaTemp.Endereco;
+            delegacia.Telefone = delegaciaTemp.Telefone;
+            delegacia.Batalhao = delegaciaTemp.Batalhao;
             delegacia.Status = true;
             database.delegacias.Add(delegacia);
             database.SaveChanges();
@@ -70,19 +76,19 @@ namespace projeto.Controllers
 
         [HttpPatch]
 
-        public IActionResult Patch([FromBody]Delegacia delegacia)
+        public IActionResult Patch([FromBody]DelegaciaDTO delegaciaTemp)
         {
-            if(delegacia.Id > 0)
+            if(delegaciaTemp.Id > 0)
             {
                 try
                 {
-                    var del = database.delegacias.First(d => d.Id == delegacia.Id);
+                    var del = database.delegacias.First(d => d.Id == delegaciaTemp.Id);
 
                     if(del != null)
                     {
-                        del.Endereco = delegacia.Endereco != null ? delegacia.Endereco : del.Endereco;
-                        del.Telefone = delegacia.Telefone != null ? delegacia.Telefone : del.Telefone;
-                        del.Batalhao = delegacia.Batalhao != null ? delegacia.Batalhao : del.Batalhao;
+                        del.Endereco = delegaciaTemp.Endereco != null ? delegaciaTemp.Endereco : del.Endereco;
+                        del.Telefone = delegaciaTemp.Telefone != null ? delegaciaTemp.Telefone : del.Telefone;
+                        del.Batalhao = delegaciaTemp.Batalhao != null ? delegaciaTemp.Batalhao : del.Batalhao;
                         database.SaveChanges();
 
                         return Ok(); 

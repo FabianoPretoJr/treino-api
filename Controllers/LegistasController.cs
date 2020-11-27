@@ -3,6 +3,7 @@ using projeto.Data;
 using projeto.Models;
 using System;
 using System.Linq;
+using projeto.DTO;
 
 namespace projeto.Controllers
 {
@@ -40,21 +41,26 @@ namespace projeto.Controllers
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody]Legista legista)
+        public IActionResult Post([FromBody]LegistaDTO legistaTemp)
         {
-            if (legista.Nome.Length <= 1)
+            if (legistaTemp.Nome.Length <= 1)
             {
                 Response.StatusCode = 400;
                 return new ObjectResult(new {msg = "O nome do legista deve ter mais de um caracter"});
             }
 
-            if(legista.CRM.Length < 6 || legista.CRM.Length > 12)
+            if(legistaTemp.CRM.Length < 6 || legistaTemp.CRM.Length > 12)
             {
                 Response.StatusCode = 400;
                 return new ObjectResult(new {msg = "O CRM deve ter de 6 a 12 digitos"});
             }
 
+            Legista legista = new Legista();
+
+            legista.Nome = legistaTemp.Nome;
+            legista.CRM = legista.CRM;
             legista.Status = true;
+
             database.legistas.Add(legista);
             database.SaveChanges();
 
@@ -63,18 +69,18 @@ namespace projeto.Controllers
         }
 
         [HttpPatch]
-        public IActionResult Patch([FromBody]Legista legista)
+        public IActionResult Patch([FromBody]LegistaDTO legistaTemp)
         {
-            if(legista.Id > 0)
+            if(legistaTemp.Id > 0)
             {
                 try
                 {
-                    var leg = database.legistas.First(l => l.Id == legista.Id);
+                    var leg = database.legistas.First(l => l.Id == legistaTemp.Id);
 
                     if(leg != null)
                     {
-                        leg.Nome = legista.Nome != null ? legista.Nome : leg.Nome;
-                        leg.CRM = legista.CRM != null ? legista.CRM : leg.CRM;
+                        leg.Nome = legistaTemp.Nome != null ? legistaTemp.Nome : leg.Nome;
+                        leg.CRM = legistaTemp.CRM != null ? legistaTemp.CRM : leg.CRM;
                         database.SaveChanges();
 
                         return Ok(); 

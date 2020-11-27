@@ -4,6 +4,7 @@ using projeto.Data;
 using projeto.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
+using projeto.DTO;
 
 namespace projeto.Controllers
 {
@@ -39,36 +40,40 @@ namespace projeto.Controllers
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody]Autopsia[] autopsias)
+        public IActionResult Post([FromBody]AutopsiaDTO[] autopsiasTemp)
         {
-            foreach (var autopsia in autopsias)
+            foreach (var autopsiaTemp in autopsiasTemp)
             {
-                if (autopsia.LegistaID <= 0)
+                if (autopsiaTemp.LegistaID <= 0)
                 {
                     Response.StatusCode = 400;
                     return new ObjectResult(new {msg = "Id do legista inválido"});
                 }
 
-                if(autopsia.VitimaID <= 0)
+                if(autopsiaTemp.VitimaID <= 0)
                 {
                     Response.StatusCode = 400;
                     return new ObjectResult(new {msg = "Id de vitima inválido"});
                 }
 
-                if(autopsia.Data.ToString().Length <= 10)
+                if(autopsiaTemp.Data.ToString().Length < 10)
                 {
                     Response.StatusCode = 400;
                     return new ObjectResult(new {msg = "Campo data está invalido"});
                 }
 
-                if(autopsia.Laudo.Length <= 1)
+                if(autopsiaTemp.Laudo.Length <= 1)
                 {
                     Response.StatusCode = 400;
                     return new ObjectResult(new {msg = "Campo laudo deve ter pelo menos mais de 1 caracter"});
                 }
 
-                autopsia.Legista = database.legistas.First(c => c.Id == autopsia.LegistaID);
-                autopsia.Vitima = database.vitimas.First(v => v.Id == autopsia.VitimaID);
+                Autopsia autopsia = new Autopsia();
+
+                autopsia.Data = DateTime.ParseExact(autopsiaTemp.Data, "dd/MM/yyyy", null);
+                autopsia.Laudo = autopsiaTemp.Laudo;
+                autopsia.Legista = database.legistas.First(c => c.Id == autopsiaTemp.LegistaID);
+                autopsia.Vitima = database.vitimas.First(v => v.Id == autopsiaTemp.VitimaID);
 
                 database.autopsias.Add(autopsia);
                 database.SaveChanges();
@@ -79,16 +84,16 @@ namespace projeto.Controllers
         }
 
         [HttpPatch]
-        public IActionResult Patch([FromBody]Autopsia[] autopsias)
+        public IActionResult Patch([FromBody]AutopsiaDTO[] autopsiasTemp)
         {
-            foreach (var autopsia in autopsias)
+            foreach (var autopsiaTemp in autopsiasTemp)
             {
-                if(autopsia.LegistaID < 0)
+                if(autopsiaTemp.LegistaID < 0)
                 {
                     Response.StatusCode = 400;
                     return new ObjectResult(new {msg = "Id do legista é inválido"});
                 }
-                if(autopsia.VitimaID < 0)
+                if(autopsiaTemp.VitimaID < 0)
                 {
                     Response.StatusCode = 400;
                     return new ObjectResult(new {msg = "Id da vitima é inválido"});
@@ -96,12 +101,12 @@ namespace projeto.Controllers
 
                 try
                 {
-                    var aut = database.autopsias.First(c => c.LegistaID == autopsia.LegistaID && c.VitimaID == autopsia.VitimaID);
+                    var aut = database.autopsias.First(c => c.LegistaID == autopsiaTemp.LegistaID && c.VitimaID == autopsiaTemp.VitimaID);
 
                     if(aut != null)
                     {
-                        aut.Data = autopsia.Data == null ? aut.Data : autopsia.Data;
-                        aut.Laudo = autopsia.Laudo == null ? aut.Laudo : autopsia.Laudo;
+                        aut.Data = autopsiaTemp.Data == null ? aut.Data : DateTime.ParseExact(autopsiaTemp.Data, "dd/MM/yyyy", null);
+                        aut.Laudo = autopsiaTemp.Laudo == null ? aut.Laudo : autopsiaTemp.Laudo;
 
                         database.SaveChanges();
                     }

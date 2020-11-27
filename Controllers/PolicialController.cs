@@ -3,6 +3,7 @@ using projeto.Models;
 using projeto.Data;
 using System.Linq;
 using System;
+using projeto.DTO;
 
 namespace projeto.Controllers
 {
@@ -40,25 +41,31 @@ namespace projeto.Controllers
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody]Policial policial)
+        public IActionResult Post([FromBody]PolicialDTO policialTemp)
         {
-            if (policial.Nome.Length <= 1)
+            if (policialTemp.Nome.Length <= 1)
             {
                 Response.StatusCode = 400;
                 return new ObjectResult(new {msg = "O nome do policial deve ter mais de um caracter"});
             }
-            if(policial.Funcional.Length <= 1)
+            if(policialTemp.Funcional.Length <= 1)
             {
                 Response.StatusCode = 400;
                 return new ObjectResult(new {msg = "A funcional do policial deve ter mais de um caracter"});
             }
-            if(policial.Patente.Length <= 1)
+            if(policialTemp.Patente.Length <= 1)
             {
                 Response.StatusCode = 400;
                 return new ObjectResult(new {msg = "A patente do policial deve ter mais de um caracter"});
             }
-            
+
+            Policial policial = new Policial();
+
+            policial.Nome = policialTemp.Nome;
+            policial.Funcional = policialTemp.Funcional;
+            policial.Patente = policialTemp.Patente;
             policial.Status = true;
+
             database.policiais.Add(policial);
             database.SaveChanges();
 
@@ -67,19 +74,19 @@ namespace projeto.Controllers
         }
 
         [HttpPatch]
-        public IActionResult Patch([FromBody]Policial policial)
+        public IActionResult Patch([FromBody]PolicialDTO policialTemp)
         {
-            if(policial.Id > 0)
+            if(policialTemp.Id > 0)
             {
                 try
                 {
-                    var pol = database.policiais.First(p => p.Id == policial.Id);
+                    var pol = database.policiais.First(p => p.Id == policialTemp.Id);
 
                     if(pol != null)
                     {
-                        pol.Nome = policial.Nome != null ? policial.Nome : pol.Nome;
-                        pol.Funcional = policial.Funcional != null ? policial.Funcional : pol.Funcional;
-                        pol.Patente = policial.Patente != null ? policial.Patente : pol.Patente;
+                        pol.Nome = policialTemp.Nome != null ? policialTemp.Nome : pol.Nome;
+                        pol.Funcional = policialTemp.Funcional != null ? policialTemp.Funcional : pol.Funcional;
+                        pol.Patente = policialTemp.Patente != null ? policialTemp.Patente : pol.Patente;
                         database.SaveChanges();
 
                         return Ok(); 

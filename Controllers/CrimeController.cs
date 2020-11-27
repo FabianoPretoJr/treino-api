@@ -4,6 +4,7 @@ using projeto.Models;
 using System.Linq;
 using System;
 using Microsoft.EntityFrameworkCore;
+using projeto.DTO;
 
 namespace projeto.Controllers
 {
@@ -27,48 +28,70 @@ namespace projeto.Controllers
         [HttpGet("GetByCriminoso/{id}")]
         public IActionResult GetByCriminoso(int id)
         {
-            var crimes = database.crimes.Where(c => c.CriminosoID == id).Include(c => c.Vitima).ToList();
+            var crimes = database.crimes.Where(c => c.CriminosoID == id).Include(c => c.Vitima).Include(c => c.Policial).ToList();
             return Ok(crimes);
         }
 
         [HttpGet("GetByVitima/{id}")]
         public IActionResult GetByVitima(int id)
         {
-            var crimes = database.crimes.Where(c => c.VitimaID == id).Include(c => c.Criminoso).ToList();
+            var crimes = database.crimes.Where(c => c.VitimaID == id).Include(c => c.Criminoso).Include(c => c.Policial).ToList();
+            return Ok(crimes);
+        }
+
+        [HttpGet("GetByPolicial/{id}")]
+        public IActionResult GetByPolicial(int id)
+        {
+            var crimes = database.crimes.Where(c => c.PolicialID == id).Include(c => c.Criminoso).Include(c => c.Vitima).ToList();
             return Ok(crimes);
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody]Crime[] crimes)
+        public IActionResult Post([FromBody]CrimeDTO[] crimesTemp)
         {
-            foreach (var crime in crimes)
+            foreach (var crimeTemp in crimesTemp)
             {
-                if (crime.CriminosoID <= 0)
+                if (crimeTemp.CriminosoID <= 0)
                 {
                     Response.StatusCode = 400;
-                    return new ObjectResult(new {msg = "Id de criminoso inválido"});
+                    return new ObjectResult(new {msg = "Id de criminoso é inválido"});
                 }
 
-                if(crime.VitimaID <= 0)
+                if(crimeTemp.VitimaID <= 0)
                 {
                     Response.StatusCode = 400;
-                    return new ObjectResult(new {msg = "Id de vitima inválido"});
+                    return new ObjectResult(new {msg = "Id de vitima é inválido"});
                 }
 
-                if(crime.Data.ToString().Length <= 10)
+                if(crimeTemp.PolicialID <= 0)
+                {
+                    Response.StatusCode = 400;
+                    return new ObjectResult(new {msg = "Id de policial é inválido"});
+                }
+
+                if(crimeTemp.Data.ToString().Length < 10)
                 {
                     Response.StatusCode = 400;
                     return new ObjectResult(new {msg = "Campo data está invalido"});
                 }
 
-                if(crime.Descricao.Length <= 1)
+                if(crimeTemp.Descricao.Length <= 1)
                 {
                     Response.StatusCode = 400;
                     return new ObjectResult(new {msg = "Campo descrição deve ter pelo menos mais de 1 caracter"});
                 }
 
-                crime.Criminoso = database.criminosos.First(c => c.Id == crime.CriminosoID);
-                crime.Vitima = database.vitimas.First(v => v.Id == crime.VitimaID);
+                Crime crime = new Crime();
+
+                crime.Data = DateTime.ParseExact(crimeTemp.Data, "dd/MM/yyyy", null);
+                crime.Descricao = crimeTemp.Descricao;
+
+                crime.Criminoso = database.criminosos.First(c => c.Id == crimeTemp.CriminosoID);
+                crime.Vitima = database.vitimas.First(v => v.Id == crimeTemp.VitimaID);
+                crime.Policial = database.policiais.First(p => p.Id == crimeTemp.PolicialID);
+
+                crime.Delegacia = database.delegacias.First(d => d.Id == crimeTemp.DelegaciaID);
+                crime.Delegado = database.delegados.First(d => d.Id == crimeTemp.DelegadoID);
 
                 database.crimes.Add(crime);
                 database.SaveChanges();
@@ -79,29 +102,36 @@ namespace projeto.Controllers
         }
 
         [HttpPatch]
-        public IActionResult Patch([FromBody]Crime[] crimes)
+        public IActionResult Patch([FromBody]CrimeDTO[] crimesTemp)
         {
-            foreach (var crime in crimes)
+            foreach (var crimeTemp in crimesTemp)
             {
-                if(crime.CriminosoID < 0)
+                if(crimeTemp.CriminosoID < 0)
                 {
                     Response.StatusCode = 400;
                     return new ObjectResult(new {msg = "Id do criminoso é inválido"});
                 }
-                if(crime.VitimaID < 0)
+
+                if(crimeTemp.VitimaID < 0)
                 {
                     Response.StatusCode = 400;
                     return new ObjectResult(new {msg = "Id da vitima é inválido"});
                 }
 
+                if(crimeTemp.PolicialID <= 0)
+                {
+                    Response.StatusCode = 400;
+                    return new ObjectResult(new {msg = "Id de policial é inválido"});
+                }
+
                 try
                 {
-                    var cri = database.crimes.First(c => c.CriminosoID == crime.CriminosoID && c.VitimaID == crime.VitimaID);
+                    var cri = database.crimes.First(c => c.CriminosoID == crimeTemp.CriminosoID && c.VitimaID == crimeTemp.VitimaID && c.PolicialID == crimeTemp.PolicialID);
 
                     if(cri != null)
                     {
-                        cri.Data = crime.Data == null ? cri.Data : crime.Data;
-                        cri.Descricao = crime.Descricao == null ? cri.Descricao : crime.Descricao;
+                        cri.Data = crimeTemp.Data == null ? cri.Data : DateTime.ParseExact(crimeTemp.Data, "dd/MM/yyyy", null);
+                        cri.Descricao = crimeTemp.Descricao == null ? cri.Descricao : crimeTemp.Descricao;
 
                         database.SaveChanges();
                     }
@@ -120,12 +150,12 @@ namespace projeto.Controllers
             return Ok(); 
         }
 
-        [HttpDelete("{idCriminoso}/{idVitima}")]
-        public IActionResult Delete(int idCriminoso, int idVitima)
+        [HttpDelete("{idCriminoso}/{idVitima}/{idPolicial}")]
+        public IActionResult Delete(int idCriminoso, int idVitima, int idPolicial)
         {
             try
             {
-                Crime cri = database.crimes.First(c => c.CriminosoID == idCriminoso && c.VitimaID == idVitima);
+                Crime cri = database.crimes.First(c => c.CriminosoID == idCriminoso && c.VitimaID == idVitima && c.PolicialID == idPolicial);
                 database.crimes.Remove(cri);
                 database.SaveChanges();
 

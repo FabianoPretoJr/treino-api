@@ -10,5 +10,9 @@ namespace projeto.Models
         public Vitima Vitima { get; set; }
         public string Descricao { get; set; }
         public DateTime Data { get; set; }
+        public int PolicialID { get; set; }
+        public Policial Policial { get; set; }
+        public Delegacia Delegacia { get; set; }
+        public Delegado Delegado { get; set; }
     }
 }

@@ -16,13 +16,11 @@ namespace projeto.Data
         public DbSet<Delegado> delegados { get; set; }
         public DbSet<Crime> crimes { get; set; }
         public DbSet<Autopsia> autopsias { get; set; }
-        public DbSet<Prissao> prissoes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Crime>().HasKey(sc => new { sc.CriminosoID, sc.VitimaID});
+            modelBuilder.Entity<Crime>().HasKey(sc => new { sc.CriminosoID, sc.VitimaID, sc.PolicialID});
             modelBuilder.Entity<Autopsia>().HasKey(sc => new { sc.VitimaID, sc.LegistaID});
-            modelBuilder.Entity<Prissao>().HasKey(sc => new { sc.PolicialID, sc.CrimosoID, sc.VitimaID});
             base.OnModelCreating(modelBuilder);
         }
 

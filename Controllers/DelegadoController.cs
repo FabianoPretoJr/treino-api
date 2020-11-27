@@ -3,6 +3,7 @@ using projeto.Models;
 using projeto.Data;
 using System.Linq;
 using System;
+using projeto.DTO;
 
 namespace projeto.Controllers
 {
@@ -40,33 +41,40 @@ namespace projeto.Controllers
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody]Delegado delegado)
+        public IActionResult Post([FromBody]DelegadoDTO delegadoTemp)
         {
-            if (delegado.Nome.Length <= 1)
+            if (delegadoTemp.Nome.Length <= 1)
             {
                 Response.StatusCode = 400;
                 return new ObjectResult(new {msg = "O nome de delegado deve ter mais de um caracter"});
             }
 
-            if(delegado.CPF.Length != 11)
+            if(delegadoTemp.CPF.Length != 11)
             {
                 Response.StatusCode = 400;
                 return new ObjectResult(new {msg = "O CPF deve ter 11 (onze) digitos"});
             }
 
-            if(delegado.Funcional.Length <= 1)
+            if(delegadoTemp.Funcional.Length <= 1)
             {
                 Response.StatusCode = 400;
                 return new ObjectResult(new {msg = "A funcional do delegado deve ter mais de um caracter"});
             }
 
-            if(delegado.Turno.Length <= 1)
+            if(delegadoTemp.Turno.Length <= 1)
             {
                 Response.StatusCode = 400;
                 return new ObjectResult(new {msg = "O turno de delegado deve ter mais de um caracter"});
             }
 
+            Delegado delegado = new Delegado();
+
+            delegado.Nome = delegadoTemp.Nome;
+            delegado.CPF = delegadoTemp.CPF;
+            delegado.Funcional = delegadoTemp.Funcional;
+            delegado.Turno = delegadoTemp.Turno;
             delegado.Status = true;
+
             database.delegados.Add(delegado);
             database.SaveChanges();
 
@@ -75,20 +83,20 @@ namespace projeto.Controllers
         }
 
         [HttpPatch]
-        public IActionResult Patch([FromBody]Delegado delegado)
+        public IActionResult Patch([FromBody]DelegadoDTO delegadoTemp)
         {
-            if(delegado.Id > 0)
+            if(delegadoTemp.Id > 0)
             {
                 try
                 {
-                    var del = database.delegados.First(d => d.Id == delegado.Id);
+                    var del = database.delegados.First(d => d.Id == delegadoTemp.Id);
 
                     if(del != null)
                     {
-                        del.Nome = delegado.Nome != null ? delegado.Nome : del.Nome;
-                        del.CPF = delegado.CPF != null ? delegado.CPF : del.CPF;
-                        del.Funcional = delegado.Funcional != null ? delegado.Funcional : del.Funcional;
-                        del.Turno = delegado.Turno != null ? delegado.Turno : del.Turno;
+                        del.Nome = delegadoTemp.Nome != null ? delegadoTemp.Nome : del.Nome;
+                        del.CPF = delegadoTemp.CPF != null ? delegadoTemp.CPF : del.CPF;
+                        del.Funcional = delegadoTemp.Funcional != null ? delegadoTemp.Funcional : del.Funcional;
+                        del.Turno = delegadoTemp.Turno != null ? delegadoTemp.Turno : del.Turno;
                         database.SaveChanges();
 
                         return Ok(); 

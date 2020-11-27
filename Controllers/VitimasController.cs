@@ -4,6 +4,7 @@ using projeto.Data;
 using System.Linq;
 using System;
 using Microsoft.EntityFrameworkCore;
+using projeto.DTO;
 
 namespace projeto.Controllers
 {
@@ -41,25 +42,31 @@ namespace projeto.Controllers
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody]Vitima vitima)
+        public IActionResult Post([FromBody]VitimaDTO vitimaTemp)
         {
-            if (vitima.Nome.Length <= 1)
+            if (vitimaTemp.Nome.Length <= 1)
             {
                 Response.StatusCode = 400;
                 return new ObjectResult(new {msg = "O nome do criminoso deve ter mais de um caracter"});
             }
-            if(vitima.CPF.Length != 11)
+            if(vitimaTemp.CPF.Length != 11)
             {
                 Response.StatusCode = 400;
                 return new ObjectResult(new {msg = "O CPF deve ter 11 digitos"});
             }
-            if(vitima.Idade <= 0)
+            if(vitimaTemp.Idade <= 0)
             {
                 Response.StatusCode = 400;
                 return new ObjectResult(new {msg = "A idade deve ser maior do que 0 (zero)"});
             }
-            
+
+            Vitima vitima = new Vitima();
+
+            vitima.Nome = vitimaTemp.Nome;
+            vitima.CPF = vitimaTemp.CPF;
+            vitima.Idade = vitimaTemp.Idade;
             vitima.Status = true;
+
             database.vitimas.Add(vitima);
             database.SaveChanges();
 
@@ -68,19 +75,19 @@ namespace projeto.Controllers
         }
 
         [HttpPatch]
-        public IActionResult Patch([FromBody]Vitima vitima)
+        public IActionResult Patch([FromBody]VitimaDTO vitimaTemp)
         {
-            if(vitima.Id > 0)
+            if(vitimaTemp.Id > 0)
             {
                 try
                 {
-                    var vit = database.vitimas.First(c => c.Id == vitima.Id);
+                    var vit = database.vitimas.First(c => c.Id == vitimaTemp.Id);
 
                     if(vit != null)
                     {
-                        vit.Nome = vitima.Nome != null ? vitima.Nome : vit.Nome;
-                        vit.CPF = vitima.CPF != null ? vitima.CPF : vit.CPF;
-                        vit.Idade = vitima.Idade > 0 ? vitima.Idade : vit.Idade;
+                        vit.Nome = vitimaTemp.Nome != null ? vitimaTemp.Nome : vit.Nome;
+                        vit.CPF = vitimaTemp.CPF != null ? vitimaTemp.CPF : vit.CPF;
+                        vit.Idade = vitimaTemp.Idade > 0 ? vitimaTemp.Idade : vit.Idade;
                         database.SaveChanges();
 
                         return Ok(); 
